@@ -298,8 +298,15 @@ a {
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
 }
 
+.search-label {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .search-input {
   width: 100%;
+  min-width: 0;
   height: 44px;
   padding: 0 6px 0 22px;
   border: 0;
