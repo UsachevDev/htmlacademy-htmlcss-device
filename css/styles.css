@@ -58,6 +58,11 @@
   box-sizing: border-box;
 }
 
+/* The hidden attribute must win over component display rules. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   height: 100%;
   color-scheme: light;
