@@ -177,7 +177,11 @@ function initCatalog() {
   const minInput = document.querySelector('[data-range-input-min]');
   const maxInput = document.querySelector('[data-range-input-max]');
 
-  let pagesShown = 1;
+  // Pagination shows the range of pages [startPage..endPage].
+  // Page links / Prev / Next replace the view (startPage === endPage);
+  // "Show more" extends the range downward (endPage += 1).
+  let startPage = 1;
+  let endPage = 1;
   let sortOrder = 'asc';
 
   function readFilters() {
@@ -246,13 +250,14 @@ function initCatalog() {
 
     const items = [];
     for (let page = 1; page <= totalPages; page += 1) {
-      const current = page === pagesShown ? ' pagination-link-current' : '';
-      const aria = page === pagesShown ? ' aria-current="page"' : '';
+      const isCurrent = page >= startPage && page <= endPage;
+      const current = isCurrent ? ' pagination-link-current' : '';
+      const aria = page === endPage ? ' aria-current="page"' : '';
       items.push(`<li class="pagination-item"><a class="pagination-link${current} link" href="#" data-page="${page}"${aria}>${page}</a></li>`);
     }
 
-    const prevDisabled = pagesShown === 1 ? ' pagination-arrow-disabled' : '';
-    const nextDisabled = pagesShown === totalPages ? ' pagination-arrow-disabled' : '';
+    const prevDisabled = endPage <= 1 ? ' pagination-arrow-disabled' : '';
+    const nextDisabled = endPage >= totalPages ? ' pagination-arrow-disabled' : '';
 
     pagination.innerHTML = `
       <a class="pagination-arrow pagination-arrow-prev${prevDisabled} link" href="#" data-page-step="-1">Prev</a>
@@ -263,19 +268,25 @@ function initCatalog() {
   function render() {
     const filtered = applySorting(applyFilters(PRODUCTS));
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    pagesShown = Math.min(pagesShown, totalPages);
+    endPage = Math.min(endPage, totalPages);
+    startPage = Math.min(startPage, endPage);
 
-    const visible = filtered.slice(0, pagesShown * PAGE_SIZE);
+    const visible = filtered.slice((startPage - 1) * PAGE_SIZE, endPage * PAGE_SIZE);
 
     list.innerHTML = visible.map(cardMarkup).join('');
     empty.hidden = filtered.length > 0;
-    moreButton.hidden = pagesShown >= totalPages;
+    moreButton.hidden = endPage >= totalPages;
 
     renderPagination(totalPages);
   }
 
+  function totalPagesNow() {
+    return Math.max(1, Math.ceil(applyFilters(PRODUCTS).length / PAGE_SIZE));
+  }
+
   function resetAndRender() {
-    pagesShown = 1;
+    startPage = 1;
+    endPage = 1;
     render();
   }
 
@@ -298,11 +309,13 @@ function initCatalog() {
     });
   });
 
+  // "Show more" extends the visible range downward (append next page).
   moreButton.addEventListener('click', () => {
-    pagesShown += 1;
+    endPage = Math.min(totalPagesNow(), endPage + 1);
     render();
   });
 
+  // Page links / Prev / Next replace the view with a single page.
   pagination?.addEventListener('click', (event) => {
     const target = event.target.closest('[data-page], [data-page-step]');
     if (!target) {
@@ -310,15 +323,16 @@ function initCatalog() {
     }
     event.preventDefault();
 
-    const totalPages = Math.max(1, Math.ceil(applyFilters(PRODUCTS).length / PAGE_SIZE));
+    const totalPages = totalPagesNow();
 
     if (target.dataset.page) {
-      pagesShown = Number(target.dataset.page);
+      startPage = endPage = Number(target.dataset.page);
     } else {
-      pagesShown = Math.min(totalPages, Math.max(1, pagesShown + Number(target.dataset.pageStep)));
+      startPage = endPage = Math.min(totalPages, Math.max(1, endPage + Number(target.dataset.pageStep)));
     }
 
     render();
+    list.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   return { render, resetAndRender };
