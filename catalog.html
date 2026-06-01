@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
     <meta name="description" content="Browse selfie monopods at Device — filter by price, color and Bluetooth, and sort by what matters to you.">
     <title>Catalog — Device</title>
     <link rel="icon" href="./img/favicon.svg" type="image/svg+xml">
@@ -26,11 +27,23 @@
               <span class="visually-hidden">Search the site</span>
               <input class="search-input" type="search" name="search" placeholder="Search">
             </label>
-            <button class="search-button" type="submit">Find</button>
+            <button class="search-button" type="submit">
+              <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="m20 20-3.6-3.6"></path>
+              </svg>
+              <span class="visually-hidden">Find</span>
+            </button>
           </form>
           <ul class="user-list reset-list">
             <li class="user-list-item user-list-item-account">
-              <a class="user-link link" href="#">Alex Morgan</a>
+              <a class="user-link link" href="#">
+                <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Alex Morgan
+              </a>
             </li>
             <li class="user-list-item user-list-item-logout">
               <a class="user-link link" href="#">Log out</a>
@@ -38,10 +51,25 @@
           </ul>
           <ul class="shop-list reset-list">
             <li class="shop-list-item shop-list-item-compare">
-              <a class="shop-link link" href="#">Compare</a>
+              <a class="shop-link link" href="#">
+                <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                Compare
+              </a>
             </li>
             <li class="shop-list-item shop-list-item-cart">
-              <button class="shop-link cart-button link" type="button">Cart</button>
+              <button class="shop-link cart-button link" type="button" data-cart-button>
+                <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                Cart
+                <span class="cart-count" data-cart-count hidden>0</span>
+              </button>
             </li>
           </ul>
         </div>
@@ -180,75 +208,11 @@
               </button>
             </div>
           </form>
-          <div class="products">
-            <ul class="products-list reset-list">
-              <li class="product-card">
-                <a class="product-card-link link" href="#">
-                  <div class="product-card-image-wrapper">
-                    <img class="product-card-image" src="./img/product-img/product-1.jpg" height="380" width="360" alt="Basic selfie stick">
-                  </div>
-                  <div class="product-card-info">
-                    <h3 class="product-card-title">Basic selfie stick</h3>
-                    <span class="product-card-price">$9</span>
-                  </div>
-                </a>
-              </li>
-              <li class="product-card">
-                <a class="product-card-link link" href="#">
-                  <div class="product-card-image-wrapper">
-                    <img class="product-card-image" src="./img/product-img/product-2.jpg" height="380" width="360" alt="Pro selfie stick">
-                  </div>
-                  <div class="product-card-info">
-                    <h3 class="product-card-title">Pro selfie stick</h3>
-                    <span class="product-card-price">$19</span>
-                  </div>
-                </a>
-              </li>
-              <li class="product-card">
-                <a class="product-card-link link" href="#">
-                  <div class="product-card-image-wrapper">
-                    <img class="product-card-image" src="./img/product-img/product-3.jpg" height="380" width="360" alt="Waterproof selfie stick">
-                  </div>
-                  <div class="product-card-info">
-                    <h3 class="product-card-title">Waterproof selfie stick</h3>
-                    <span class="product-card-price">$29</span>
-                  </div>
-                </a>
-              </li>
-              <li class="product-card">
-                <a class="product-card-link link" href="#">
-                  <div class="product-card-image-wrapper">
-                    <img class="product-card-image" src="./img/product-img/product-4.jpg" height="380" width="360" alt="Follow-me selfie stick">
-                  </div>
-                  <div class="product-card-info">
-                    <h3 class="product-card-title">Follow-me selfie stick</h3>
-                    <span class="product-card-price">$19</span>
-                  </div>
-                </a>
-              </li>
-            </ul>
-            <button class="button button-secondary products-more" type="button">Show more</button>
-            <nav class="pagination" aria-label="Pagination">
-              <a class="pagination-arrow pagination-arrow-prev pagination-arrow-disabled link" href="#" aria-disabled="true">Prev</a>
-              <ul class="pagination-list reset-list">
-                <li class="pagination-item">
-                  <a class="pagination-link pagination-link-current link" href="#" aria-current="page">1</a>
-                </li>
-                <li class="pagination-item">
-                  <a class="pagination-link link" href="#">2</a>
-                </li>
-                <li class="pagination-item">
-                  <a class="pagination-link link" href="#">3</a>
-                </li>
-                <li class="pagination-item">
-                  <span class="pagination-ellipsis">…</span>
-                </li>
-                <li class="pagination-item">
-                  <a class="pagination-link link" href="#">15</a>
-                </li>
-              </ul>
-              <a class="pagination-arrow pagination-arrow-next link" href="#">Next</a>
-            </nav>
+          <div class="products" data-catalog>
+            <ul class="products-list reset-list" data-products></ul>
+            <p class="products-empty" data-products-empty hidden>No products match the selected filters.</p>
+            <button class="button button-secondary products-more" type="button" data-products-more>Show more</button>
+            <nav class="pagination" aria-label="Pagination" data-pagination></nav>
           </div>
         </div>
       </div>

@@ -11,8 +11,12 @@ with semantic HTML, modern CSS and vanilla JavaScript — no frameworks, no buil
 - **Vanilla JavaScript interactivity**, written without dependencies:
   - product slider with arrows and pagination dots;
   - tabbed "advantages" section;
-  - dual-handle price range filter synced with number inputs;
-  - sort-direction toggle;
+  - **data-driven catalog** with live filtering (color, price range, Bluetooth),
+    sorting (popularity / new / price, ascending & descending), and
+    "show more" + pagination;
+  - **shopping cart** with an add-to-cart action and a header counter persisted
+    in `localStorage` across pages;
+  - dual-handle price range slider synced with the number inputs;
   - accessible mobile burger menu.
 - **Accessible & semantic** — landmark elements, `aria` attributes, visually-hidden labels,
   keyboard-focus styles and correct heading order.
