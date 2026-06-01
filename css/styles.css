@@ -1160,42 +1160,63 @@ a {
 
 .footer-container {
   display: grid;
-  gap: 30px;
-  padding: 40px 0;
-  text-align: center;
+  gap: 36px;
+  padding: 50px 0;
 }
 
-.footer-logo {
-  margin-bottom: 20px;
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.footer-heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.footer-tagline {
+  margin: 0;
+  max-width: 260px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-address {
+  font-style: normal;
 }
 
 .footer-address-text {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.4;
+  max-width: 260px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .footer-list {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .footer-link {
-  font-family: var(--font-display);
-  font-weight: 800;
   font-size: 16px;
-  letter-spacing: 3.2px;
   color: var(--color-white);
   text-decoration: none;
-  text-transform: uppercase;
-  transition: opacity 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .footer-link:hover,
 .footer-link:focus-visible {
-  opacity: 0.6;
+  color: var(--color-accent);
 }
 
 .footer-link-active {
@@ -1206,12 +1227,17 @@ a {
   font-size: 16px;
   color: var(--color-white);
   text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-phone:hover,
+.footer-phone:focus-visible {
+  color: var(--color-accent);
 }
 
 .footer-socials {
   display: flex;
-  justify-content: center;
-  gap: 15px;
+  gap: 12px;
 }
 
 .footer-socials-link {
@@ -1281,22 +1307,9 @@ a {
   }
 
   .footer-container {
-    grid-template-columns: auto 1fr auto;
-    align-items: start;
-    text-align: left;
-  }
-
-  .footer-list {
-    justify-content: center;
-  }
-
-  .footer-phone {
-    justify-self: end;
-    align-self: center;
-  }
-
-  .footer-socials {
-    justify-content: flex-start;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 50px 0;
   }
 
   .catalog {
@@ -1469,9 +1482,9 @@ a {
   }
 
   .footer-container {
-    grid-template-columns: auto 1fr auto;
-    gap: 30px 60px;
-    padding: 60px 0;
+    grid-template-columns: 2fr 1.1fr 1.8fr 1.1fr;
+    gap: 50px;
+    padding: 64px 0;
   }
 
   .catalog {
