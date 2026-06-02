@@ -14,12 +14,19 @@ with semantic HTML, modern CSS and vanilla JavaScript — no frameworks, no buil
   - **data-driven catalog** with live filtering (color, price range, Bluetooth),
     sorting (popularity / new / price, ascending & descending), and
     "show more" + pagination;
-  - **shopping cart** with an add-to-cart action and a header counter persisted
-    in `localStorage` across pages;
+  - **shopping cart** built as a real store in `localStorage`: add to cart, a
+    mini-cart modal with quantity steppers, remove, live total and checkout;
+  - **accessible modals** (cart, login, product quick view) with focus trapping,
+    `Esc`-to-close, scroll lock and `aria` dialog roles — injected once and shared
+    across pages;
+  - **login form** with native constraint validation and inline error messages;
+  - **quick view** of any product from the catalog cards or the hero slider;
+  - **toast notifications** and tasteful micro-interactions (card hover, a
+    back-to-top button), all respecting `prefers-reduced-motion`;
   - dual-handle price range slider synced with the number inputs;
   - accessible mobile burger menu.
 - **Accessible & semantic** — landmark elements, `aria` attributes, visually-hidden labels,
-  keyboard-focus styles and correct heading order.
+  keyboard-focus styles, focus-trapped dialogs and correct heading order.
 - **Maintainable CSS** — CSS custom properties for the design tokens, a single fluid
   container helper, and clearly sectioned, lint-friendly styles.
 - **Performance-minded** — `woff2` fonts with `font-display: swap` and `<link rel="preload">`,

@@ -96,22 +96,69 @@ function initSlider() {
 }
 
 /* ========================================================================== */
-/* Cart (shared across pages, persisted in localStorage)                      */
+/* Cart store (items persisted in localStorage)                               */
 /* ========================================================================== */
 
-const CART_KEY = 'device-cart-count';
+const CART_KEY = 'device-cart';
 
-function getCartCount() {
-  return Number(localStorage.getItem(CART_KEY)) || 0;
+function getCart() {
+  try {
+    return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+  } catch (error) {
+    return [];
+  }
 }
 
-function setCartCount(count) {
-  localStorage.setItem(CART_KEY, String(count));
+function saveCart(items) {
+  localStorage.setItem(CART_KEY, JSON.stringify(items));
   renderCartCount();
+  renderCartModal();
+}
+
+function cartCount() {
+  return getCart().reduce((sum, item) => sum + item.qty, 0);
+}
+
+function cartTotal() {
+  return getCart().reduce((sum, item) => sum + item.price * item.qty, 0);
+}
+
+function addToCart(product) {
+  const items = getCart();
+  const existing = items.find((item) => item.title === product.title);
+
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    items.push({ title: product.title, price: product.price, image: product.image, qty: 1 });
+  }
+
+  saveCart(items);
+}
+
+function setQty(title, qty) {
+  let items = getCart();
+  const item = items.find((entry) => entry.title === title);
+
+  if (!item) {
+    return;
+  }
+
+  item.qty = qty;
+
+  if (item.qty <= 0) {
+    items = items.filter((entry) => entry.title !== title);
+  }
+
+  saveCart(items);
+}
+
+function removeFromCart(title) {
+  saveCart(getCart().filter((item) => item.title !== title));
 }
 
 function renderCartCount() {
-  const count = getCartCount();
+  const count = cartCount();
 
   document.querySelectorAll('[data-cart-count]').forEach((badge) => {
     badge.textContent = String(count);
@@ -119,23 +166,463 @@ function renderCartCount() {
   });
 }
 
-function initCart() {
-  renderCartCount();
+/* ========================================================================== */
+/* Toasts                                                                     */
+/* ========================================================================== */
 
+function showToast(message) {
+  const wrap = document.querySelector('[data-toasts]');
+
+  if (!wrap) {
+    return;
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  wrap.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('toast-visible'));
+
+  setTimeout(() => {
+    toast.classList.remove('toast-visible');
+    setTimeout(() => toast.remove(), 300);
+  }, 2600);
+}
+
+/* ========================================================================== */
+/* Modal infrastructure (injected once, shared by both pages)                 */
+/* ========================================================================== */
+
+let activeModal = null;
+let lastFocused = null;
+let currentQuickProduct = null;
+
+function modalShell(name, labelId, bodyHTML, extraClass = '') {
+  return `
+    <div class="modal ${extraClass}" data-modal="${name}" hidden>
+      <div class="modal-overlay" data-modal-close></div>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="${labelId}">
+        <button class="modal-close" type="button" data-modal-close aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18"></path>
+          </svg>
+        </button>
+        ${bodyHTML}
+      </div>
+    </div>`;
+}
+
+function buildModals() {
+  if (document.querySelector('[data-modals]')) {
+    return;
+  }
+
+  const loginBody = `
+    <form class="modal-form auth-form" novalidate>
+      <h2 class="modal-title" id="login-title">Log in</h2>
+      <p class="modal-subtitle">Welcome back to Device.</p>
+      <label class="field">
+        <span class="field-label">Email</span>
+        <input class="field-input" type="email" name="email" required placeholder="you@example.com" autocomplete="email">
+        <span class="field-error" data-error></span>
+      </label>
+      <label class="field">
+        <span class="field-label">Password</span>
+        <input class="field-input" type="password" name="password" required minlength="6" placeholder="At least 6 characters" autocomplete="current-password">
+        <span class="field-error" data-error></span>
+      </label>
+      <button class="button modal-submit" type="submit">Log in</button>
+      <p class="modal-alt">No account yet? <a href="#">Create one</a></p>
+    </form>`;
+
+  const cartBody = `
+    <div class="cart-modal">
+      <h2 class="modal-title" id="cart-title">Your cart</h2>
+      <ul class="cart-items reset-list" data-cart-items></ul>
+      <p class="cart-empty-msg" data-cart-empty>Your cart is empty — add some gadgets!</p>
+      <div class="cart-summary" data-cart-summary hidden>
+        <span class="cart-total">Total: <strong data-cart-total>$0</strong></span>
+        <button class="button cart-checkout" type="button" data-cart-checkout>Checkout</button>
+      </div>
+    </div>`;
+
+  const quickviewBody = `
+    <div class="quickview">
+      <div class="quickview-media">
+        <img class="quickview-image" data-qv-image src="" alt="" width="320" height="320">
+      </div>
+      <div class="quickview-info">
+        <h2 class="modal-title" id="quickview-title" data-qv-title></h2>
+        <p class="quickview-price" data-qv-price></p>
+        <p class="quickview-desc" data-qv-desc></p>
+        <dl class="quickview-specs" data-qv-specs></dl>
+        <button class="button quickview-add" type="button" data-qv-add>Add to cart</button>
+      </div>
+    </div>`;
+
+  const root = document.createElement('div');
+  root.setAttribute('data-modals', '');
+  root.innerHTML =
+    modalShell('login', 'login-title', loginBody, 'modal-login') +
+    modalShell('cart', 'cart-title', cartBody, 'modal-cart') +
+    modalShell('quickview', 'quickview-title', quickviewBody, 'modal-quickview');
+  document.body.appendChild(root);
+
+  const toasts = document.createElement('div');
+  toasts.className = 'toasts';
+  toasts.setAttribute('data-toasts', '');
+  toasts.setAttribute('aria-live', 'polite');
+  document.body.appendChild(toasts);
+}
+
+function getFocusable(modal) {
+  return Array.from(
+    modal.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])')
+  ).filter((el) => el.offsetParent !== null);
+}
+
+function openModal(name) {
+  const modal = document.querySelector(`[data-modal="${name}"]`);
+
+  if (!modal) {
+    return;
+  }
+
+  if (name === 'cart') {
+    renderCartModal();
+  }
+
+  lastFocused = document.activeElement;
+  modal.hidden = false;
+  document.body.classList.add('no-scroll');
+  requestAnimationFrame(() => modal.classList.add('modal-open'));
+  activeModal = modal;
+
+  setTimeout(() => {
+    const focusables = getFocusable(modal);
+    const target = focusables.find((el) => el.tagName === 'INPUT') || focusables[0];
+    target?.focus();
+  }, 60);
+}
+
+function closeModal() {
+  if (!activeModal) {
+    return;
+  }
+
+  const modal = activeModal;
+  activeModal = null;
+  modal.classList.remove('modal-open');
+  document.body.classList.remove('no-scroll');
+
+  setTimeout(() => {
+    if (!modal.classList.contains('modal-open')) {
+      modal.hidden = true;
+    }
+  }, 260);
+
+  lastFocused?.focus();
+}
+
+function trapFocus(event) {
+  if (!activeModal) {
+    return;
+  }
+
+  const focusables = getFocusable(activeModal);
+
+  if (!focusables.length) {
+    return;
+  }
+
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+/* ========================================================================== */
+/* Cart modal rendering                                                       */
+/* ========================================================================== */
+
+function renderCartModal() {
+  const list = document.querySelector('[data-cart-items]');
+
+  if (!list) {
+    return;
+  }
+
+  const items = getCart();
+  const empty = document.querySelector('[data-cart-empty]');
+  const summary = document.querySelector('[data-cart-summary]');
+  const total = document.querySelector('[data-cart-total]');
+
+  list.innerHTML = items
+    .map(
+      (item) => `
+      <li class="cart-item" data-cart-item="${item.title}">
+        <img class="cart-item-image" src="${item.image}" alt="" width="56" height="56">
+        <div class="cart-item-info">
+          <span class="cart-item-title">${item.title}</span>
+          <span class="cart-item-price">$${item.price}</span>
+        </div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" type="button" data-qty-dec aria-label="Decrease quantity">−</button>
+          <span class="qty-value">${item.qty}</span>
+          <button class="qty-btn" type="button" data-qty-inc aria-label="Increase quantity">+</button>
+        </div>
+        <button class="cart-item-remove" type="button" data-cart-remove aria-label="Remove ${item.title}">✕</button>
+      </li>`
+    )
+    .join('');
+
+  if (empty) {
+    empty.hidden = items.length > 0;
+  }
+  if (summary) {
+    summary.hidden = items.length === 0;
+  }
+  if (total) {
+    total.textContent = `$${cartTotal()}`;
+  }
+}
+
+/* ========================================================================== */
+/* Quick view                                                                 */
+/* ========================================================================== */
+
+function openQuickview(product) {
+  const modal = document.querySelector('[data-modal="quickview"]');
+
+  if (!modal) {
+    return;
+  }
+
+  currentQuickProduct = { title: product.title, price: product.price, image: product.image };
+
+  const image = modal.querySelector('[data-qv-image]');
+  image.src = product.image;
+  image.alt = product.title;
+  modal.querySelector('[data-qv-title]').textContent = product.title;
+  modal.querySelector('[data-qv-price]').textContent = `$${product.price}`;
+  modal.querySelector('[data-qv-desc]').textContent = product.desc || '';
+  modal.querySelector('[data-qv-specs]').innerHTML = (product.specs || [])
+    .map((spec) => `<div class="quickview-spec"><dt>${spec.name}</dt><dd>${spec.value}</dd></div>`)
+    .join('');
+
+  openModal('quickview');
+}
+
+function openQuickviewFromCatalog(title) {
+  const product = PRODUCTS.find((entry) => entry.title === title);
+
+  if (!product) {
+    return;
+  }
+
+  const colors = product.colors.map((color) => color[0].toUpperCase() + color.slice(1)).join(', ');
+
+  openQuickview({
+    title: product.title,
+    price: product.price,
+    image: `./img/product-img/product-${product.image}.jpg`,
+    desc: `A dependable ${product.title.toLowerCase()} for sharp, steady selfies and group shots — extends in seconds and folds down to pocket size.`,
+    specs: [
+      { name: 'Colors', value: colors },
+      { name: 'Bluetooth remote', value: product.bluetooth ? 'Yes' : 'No' },
+      { name: 'Warranty', value: '24 months' }
+    ]
+  });
+}
+
+function initSliderQuickview() {
+  const slider = document.querySelector('[data-slider]');
+
+  if (!slider) {
+    return;
+  }
+
+  slider.addEventListener('click', (event) => {
+    const button = event.target.closest('.slider-button-details');
+
+    if (!button) {
+      return;
+    }
+
+    event.preventDefault();
+    const slide = button.closest('[data-slide]');
+
+    openQuickview({
+      title: slide.querySelector('.slider-title').textContent.trim(),
+      price: Number(slide.dataset.productPrice),
+      image: slide.querySelector('.slider-image').getAttribute('src'),
+      desc: slide.querySelector('.slider-description').textContent.trim(),
+      specs: Array.from(slide.querySelectorAll('.specs-item')).map((spec) => ({
+        name: spec.querySelector('.specs-name').textContent.trim(),
+        value: spec.querySelector('.specs-value').textContent.trim()
+      }))
+    });
+  });
+}
+
+/* ========================================================================== */
+/* Global interactions: modals, cart actions, login                          */
+/* ========================================================================== */
+
+function flashAdded(button) {
+  if (!button || button.dataset.qvAdd !== undefined) {
+    return;
+  }
+
+  if (!button.dataset.label) {
+    button.dataset.label = button.textContent;
+  }
+
+  button.textContent = 'Added ✓';
+  button.classList.add('product-card-add-done');
+  clearTimeout(button.flashTimer);
+  button.flashTimer = setTimeout(() => {
+    button.textContent = button.dataset.label;
+    button.classList.remove('product-card-add-done');
+  }, 1200);
+}
+
+function initInteractions() {
   document.addEventListener('click', (event) => {
-    const addButton = event.target.closest('[data-add-to-cart]');
+    const opener = event.target.closest('[data-modal-open]');
+    if (opener) {
+      event.preventDefault();
+      openModal(opener.dataset.modalOpen);
+      return;
+    }
 
+    if (event.target.closest('[data-modal-close]')) {
+      event.preventDefault();
+      closeModal();
+      return;
+    }
+
+    const quickview = event.target.closest('[data-quickview]');
+    if (quickview) {
+      event.preventDefault();
+      openQuickviewFromCatalog(quickview.dataset.title);
+      return;
+    }
+
+    const addButton = event.target.closest('[data-add-to-cart]');
     if (addButton) {
       event.preventDefault();
-      setCartCount(getCartCount() + 1);
-      addButton.classList.add('product-card-add-done');
-      addButton.textContent = 'Added ✓';
-      setTimeout(() => {
-        addButton.classList.remove('product-card-add-done');
-        addButton.textContent = 'Add to cart';
-      }, 1200);
+      addToCart({
+        title: addButton.dataset.title,
+        price: Number(addButton.dataset.price),
+        image: addButton.dataset.image
+      });
+      flashAdded(addButton);
+      showToast(`Added “${addButton.dataset.title}” to cart`);
+      return;
+    }
+
+    const qvAdd = event.target.closest('[data-qv-add]');
+    if (qvAdd && currentQuickProduct) {
+      addToCart(currentQuickProduct);
+      showToast(`Added “${currentQuickProduct.title}” to cart`);
+      return;
+    }
+
+    const cartItemButton = event.target.closest('[data-qty-dec], [data-qty-inc], [data-cart-remove]');
+    if (cartItemButton) {
+      const row = cartItemButton.closest('[data-cart-item]');
+      const title = row.dataset.cartItem;
+      const item = getCart().find((entry) => entry.title === title);
+      if (!item) {
+        return;
+      }
+      if (cartItemButton.matches('[data-qty-dec]')) {
+        setQty(title, item.qty - 1);
+      } else if (cartItemButton.matches('[data-qty-inc]')) {
+        setQty(title, item.qty + 1);
+      } else {
+        removeFromCart(title);
+      }
+      return;
+    }
+
+    const checkout = event.target.closest('[data-cart-checkout]');
+    if (checkout) {
+      if (getCart().length === 0) {
+        return;
+      }
+      saveCart([]);
+      closeModal();
+      showToast('Order placed! 🎉 Thank you for shopping with Device.');
     }
   });
+
+  document.addEventListener('keydown', (event) => {
+    if (!activeModal) {
+      return;
+    }
+    if (event.key === 'Escape') {
+      closeModal();
+    } else if (event.key === 'Tab') {
+      trapFocus(event);
+    }
+  });
+
+  document.addEventListener('submit', (event) => {
+    if (!event.target.classList.contains('auth-form')) {
+      return;
+    }
+
+    event.preventDefault();
+    const form = event.target;
+    let valid = true;
+
+    form.querySelectorAll('input').forEach((input) => {
+      const error = input.closest('.field').querySelector('[data-error]');
+      if (!input.checkValidity()) {
+        valid = false;
+        error.textContent = input.validationMessage;
+        input.classList.add('field-invalid');
+      } else {
+        error.textContent = '';
+        input.classList.remove('field-invalid');
+      }
+    });
+
+    if (valid) {
+      closeModal();
+      showToast('Welcome back! 👋');
+      form.reset();
+    }
+  });
+}
+
+/* ========================================================================== */
+/* Scroll to top                                                              */
+/* ========================================================================== */
+
+function initScrollTop() {
+  const button = document.createElement('button');
+  button.className = 'scroll-top';
+  button.type = 'button';
+  button.setAttribute('aria-label', 'Back to top');
+  button.innerHTML =
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>';
+  document.body.appendChild(button);
+
+  button.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  const onScroll = () => button.classList.toggle('scroll-top-visible', window.scrollY > 600);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 }
 
 /* ========================================================================== */
@@ -177,9 +664,6 @@ function initCatalog() {
   const minInput = document.querySelector('[data-range-input-min]');
   const maxInput = document.querySelector('[data-range-input-max]');
 
-  // Pagination shows the range of pages [startPage..endPage].
-  // Page links / Prev / Next replace the view (startPage === endPage);
-  // "Show more" extends the range downward (endPage += 1).
   let startPage = 1;
   let endPage = 1;
   let sortOrder = 'asc';
@@ -223,18 +707,20 @@ function initCatalog() {
   }
 
   function cardMarkup(product) {
+    const image = `./img/product-img/product-${product.image}.jpg`;
     return `
       <li class="product-card" data-product>
-        <a class="product-card-link link" href="#">
+        <a class="product-card-link link" href="#" data-quickview data-title="${product.title}">
           <div class="product-card-image-wrapper">
-            <img class="product-card-image" src="./img/product-img/product-${product.image}.jpg" height="380" width="360" alt="${product.title}" loading="lazy">
+            <img class="product-card-image" src="${image}" height="380" width="360" alt="${product.title}" loading="lazy">
+            <span class="product-card-quickview">Quick view</span>
           </div>
           <div class="product-card-info">
             <h3 class="product-card-title">${product.title}</h3>
             <span class="product-card-price">$${product.price}</span>
           </div>
         </a>
-        <button class="button product-card-add" type="button" data-add-to-cart>Add to cart</button>
+        <button class="button product-card-add" type="button" data-add-to-cart data-title="${product.title}" data-price="${product.price}" data-image="${image}">Add to cart</button>
       </li>`;
   }
 
@@ -290,7 +776,6 @@ function initCatalog() {
     render();
   }
 
-  // Live filtering + sorting.
   filterForm?.addEventListener('change', resetAndRender);
   filterForm?.addEventListener('input', resetAndRender);
   filterForm?.addEventListener('submit', (event) => {
@@ -309,13 +794,11 @@ function initCatalog() {
     });
   });
 
-  // "Show more" extends the visible range downward (append next page).
   moreButton.addEventListener('click', () => {
     endPage = Math.min(totalPagesNow(), endPage + 1);
     render();
   });
 
-  // Page links / Prev / Next replace the view with a single page.
   pagination?.addEventListener('click', (event) => {
     const target = event.target.closest('[data-page], [data-page-step]');
     if (!target) {
@@ -440,7 +923,12 @@ function initRange(onChange) {
 initNav();
 initTabs();
 initSlider();
-initCart();
+
+buildModals();
+renderCartCount();
+initInteractions();
+initSliderQuickview();
+initScrollTop();
 
 const catalog = initCatalog();
 if (catalog) {
