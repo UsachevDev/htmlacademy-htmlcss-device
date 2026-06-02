@@ -70,24 +70,56 @@ function initSlider() {
   }
 
   let current = 0;
+  const OFFSET = 60;
 
-  const render = () => {
-    slides.forEach((slide, index) => {
-      const isActive = index === current;
-      slide.classList.toggle('slider-slide-current', isActive);
-      slide.inert = !isActive;
-      slide.setAttribute('aria-hidden', String(!isActive));
-    });
+  function setActive(slide, active) {
+    slide.classList.toggle('slider-slide-current', active);
+    slide.inert = !active;
+    slide.setAttribute('aria-hidden', String(!active));
+  }
 
+  function updateDots() {
     dots.forEach((dot, index) => {
       dot.classList.toggle('slider-pagination-button-current', index === current);
     });
-  };
+  }
 
-  const goTo = (index) => {
-    current = (index + slides.length) % slides.length;
-    render();
-  };
+  function renderInitial() {
+    slides.forEach((slide, index) => setActive(slide, index === current));
+    updateDots();
+  }
+
+  // Directional slide: forward (dir > 0) moves content left, back moves it right.
+  function goTo(index, dir) {
+    const target = (index + slides.length) % slides.length;
+    if (target === current) {
+      return;
+    }
+
+    const direction = dir !== undefined ? dir : (target > current ? 1 : -1);
+    const oldSlide = slides[current];
+    const newSlide = slides[target];
+    const enterFrom = direction >= 0 ? OFFSET : -OFFSET;
+    const exitTo = direction >= 0 ? -OFFSET : OFFSET;
+
+    // Place the incoming slide off to the entering side without animating.
+    newSlide.style.transition = 'none';
+    newSlide.style.opacity = '0';
+    newSlide.style.transform = `translateX(${enterFrom}px)`;
+    void newSlide.offsetWidth;
+    newSlide.style.transition = '';
+
+    setActive(newSlide, true);
+    newSlide.style.opacity = '1';
+    newSlide.style.transform = 'translateX(0)';
+
+    setActive(oldSlide, false);
+    oldSlide.style.opacity = '0';
+    oldSlide.style.transform = `translateX(${exitTo}px)`;
+
+    current = target;
+    updateDots();
+  }
 
   // Autoplay with pause on hover/focus, respecting reduced motion.
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -107,11 +139,11 @@ function initSlider() {
       return;
     }
     stop();
-    timer = setInterval(() => goTo(current + 1), AUTOPLAY_MS);
+    timer = setInterval(() => goTo(current + 1, 1), AUTOPLAY_MS);
   }
 
-  function userGoTo(index) {
-    goTo(index);
+  function userGoTo(index, dir) {
+    goTo(index, dir);
     start();
   }
 
@@ -144,7 +176,8 @@ function initSlider() {
     }
     const dx = event.changedTouches[0].clientX - touchX;
     if (Math.abs(dx) > 40) {
-      userGoTo(current + (dx < 0 ? 1 : -1));
+      const step = dx < 0 ? 1 : -1;
+      userGoTo(current + step, step);
     }
     touchX = null;
   }, { passive: true });
@@ -152,17 +185,17 @@ function initSlider() {
   // Keyboard arrows.
   slider.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowLeft') {
-      userGoTo(current - 1);
+      userGoTo(current - 1, -1);
     } else if (event.key === 'ArrowRight') {
-      userGoTo(current + 1);
+      userGoTo(current + 1, 1);
     }
   });
 
-  prev?.addEventListener('click', () => userGoTo(current - 1));
-  next?.addEventListener('click', () => userGoTo(current + 1));
+  prev?.addEventListener('click', () => userGoTo(current - 1, -1));
+  next?.addEventListener('click', () => userGoTo(current + 1, 1));
   dots.forEach((dot, index) => dot.addEventListener('click', () => userGoTo(index)));
 
-  render();
+  renderInitial();
   start();
 }
 

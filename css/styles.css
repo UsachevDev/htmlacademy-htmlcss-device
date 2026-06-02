@@ -431,6 +431,11 @@ a {
 /* Slider                                                                     */
 /* -------------------------------------------------------------------------- */
 
+/* Contain the slides' horizontal motion without clipping the decorative number. */
+.main-index {
+  overflow-x: clip;
+}
+
 .slider {
   position: relative;
   margin-top: 30px;
@@ -443,14 +448,14 @@ a {
 
 .slider-slide {
   grid-area: 1 / 1;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 24px;
   align-items: center;
   opacity: 0;
-  transform: translateY(16px);
   pointer-events: none;
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
 .slider-slide-current {
