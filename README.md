@@ -11,9 +11,10 @@ with semantic HTML, modern CSS and vanilla JavaScript — no frameworks, no buil
 - **Vanilla JavaScript interactivity**, written without dependencies:
   - product slider with arrows and pagination dots;
   - tabbed "advantages" section;
-  - **data-driven catalog** with live filtering (color, price range, Bluetooth),
-    sorting (popularity / new / price, ascending & descending), and
-    "show more" + pagination;
+  - **data-driven, category-aware catalog** — each category card opens its own
+    catalog view (`?category=`) with its products, title and breadcrumb; live
+    filtering (color, price range, Bluetooth), sorting (popularity / new / price,
+    ascending & descending), and "show more" + pagination;
   - **shopping cart** built as a real store in `localStorage`: add to cart, a
     mini-cart modal with quantity steppers, remove, live total and checkout;
   - **accessible modals** (cart, login, contact, product quick view) with focus

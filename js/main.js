@@ -548,7 +548,7 @@ function openQuickview(product) {
 }
 
 function openQuickviewFromCatalog(title) {
-  const product = PRODUCTS.find((entry) => entry.title === title);
+  const product = activeProducts.find((entry) => entry.title === title);
 
   if (!product) {
     return;
@@ -559,11 +559,11 @@ function openQuickviewFromCatalog(title) {
   openQuickview({
     title: product.title,
     price: product.price,
-    image: `./img/product-img/product-${product.image}.jpg`,
-    desc: `A dependable ${product.title.toLowerCase()} for sharp, steady selfies and group shots — extends in seconds and folds down to pocket size.`,
+    image: product.image,
+    desc: `The ${product.title} pairs everyday reliability with a clean, modern design — ready to use out of the box and backed by our warranty.`,
     specs: [
       { name: 'Colors', value: colors },
-      { name: 'Bluetooth remote', value: product.bluetooth ? 'Yes' : 'No' },
+      { name: 'Bluetooth', value: product.bluetooth ? 'Yes' : 'No' },
       { name: 'Warranty', value: '24 months' }
     ]
   });
@@ -794,20 +794,94 @@ function initScrollTop() {
 /* Catalog: data-driven products, filters, sorting, pagination                */
 /* ========================================================================== */
 
-const PRODUCTS = [
-  { title: 'Basic selfie stick', price: 9, image: 1, colors: ['black', 'white'], bluetooth: false, added: 4, popularity: 70 },
-  { title: 'Pro selfie stick', price: 19, image: 2, colors: ['black'], bluetooth: true, added: 11, popularity: 95 },
-  { title: 'Waterproof selfie stick', price: 29, image: 3, colors: ['black', 'blue'], bluetooth: true, added: 7, popularity: 80 },
-  { title: 'Follow-me selfie stick', price: 19, image: 4, colors: ['black', 'white', 'pink'], bluetooth: true, added: 12, popularity: 88 },
-  { title: 'Compact selfie stick', price: 12, image: 1, colors: ['white', 'red'], bluetooth: false, added: 2, popularity: 55 },
-  { title: 'Tripod selfie stick', price: 24, image: 2, colors: ['black', 'blue'], bluetooth: true, added: 9, popularity: 76 },
-  { title: 'Mini selfie stick', price: 7, image: 3, colors: ['pink', 'white'], bluetooth: false, added: 3, popularity: 60 },
-  { title: 'Travel selfie stick', price: 15, image: 4, colors: ['black', 'red'], bluetooth: true, added: 10, popularity: 84 },
-  { title: 'Premium selfie stick', price: 39, image: 1, colors: ['black'], bluetooth: true, added: 6, popularity: 92 },
-  { title: 'Studio selfie stick', price: 34, image: 2, colors: ['white', 'blue'], bluetooth: true, added: 8, popularity: 68 },
-  { title: 'Pocket selfie stick', price: 11, image: 3, colors: ['black', 'pink'], bluetooth: false, added: 1, popularity: 50 },
-  { title: 'Adventure selfie stick', price: 27, image: 4, colors: ['black', 'red', 'blue'], bluetooth: true, added: 5, popularity: 79 }
-];
+const PHOTO = (n) => `./img/product-img/product-${n}.jpg`;
+const ICON = {
+  vr: './img/slider-img/vr.svg',
+  watches: './img/slider-img/watch.svg',
+  drones: './img/slider-img/drone.svg',
+  cameras: './img/categories/cameras.svg',
+  trackers: './img/categories/trackers.svg'
+};
+
+const CATALOG = {
+  selfie: {
+    name: 'Selfie monopods',
+    products: [
+      { title: 'Basic selfie stick', price: 9, image: PHOTO(1), colors: ['black', 'white'], bluetooth: false, added: 4, popularity: 70 },
+      { title: 'Pro selfie stick', price: 19, image: PHOTO(2), colors: ['black'], bluetooth: true, added: 11, popularity: 95 },
+      { title: 'Waterproof selfie stick', price: 29, image: PHOTO(3), colors: ['black', 'blue'], bluetooth: true, added: 7, popularity: 80 },
+      { title: 'Follow-me selfie stick', price: 19, image: PHOTO(4), colors: ['black', 'white', 'pink'], bluetooth: true, added: 12, popularity: 88 },
+      { title: 'Compact selfie stick', price: 12, image: PHOTO(1), colors: ['white', 'red'], bluetooth: false, added: 2, popularity: 55 },
+      { title: 'Tripod selfie stick', price: 24, image: PHOTO(2), colors: ['black', 'blue'], bluetooth: true, added: 9, popularity: 76 },
+      { title: 'Mini selfie stick', price: 7, image: PHOTO(3), colors: ['pink', 'white'], bluetooth: false, added: 3, popularity: 60 },
+      { title: 'Travel selfie stick', price: 15, image: PHOTO(4), colors: ['black', 'red'], bluetooth: true, added: 10, popularity: 84 },
+      { title: 'Premium selfie stick', price: 39, image: PHOTO(1), colors: ['black'], bluetooth: true, added: 6, popularity: 92 },
+      { title: 'Studio selfie stick', price: 34, image: PHOTO(2), colors: ['white', 'blue'], bluetooth: true, added: 8, popularity: 68 },
+      { title: 'Pocket selfie stick', price: 11, image: PHOTO(3), colors: ['black', 'pink'], bluetooth: false, added: 1, popularity: 50 },
+      { title: 'Adventure selfie stick', price: 27, image: PHOTO(4), colors: ['black', 'red', 'blue'], bluetooth: true, added: 5, popularity: 79 }
+    ]
+  },
+  vr: {
+    name: 'Virtual reality',
+    products: [
+      { title: 'VR Cardboard', price: 9, image: ICON.vr, colors: ['white', 'red'], bluetooth: false, added: 1, popularity: 45 },
+      { title: 'VR Headset Lite', price: 29, image: ICON.vr, colors: ['black'], bluetooth: false, added: 2, popularity: 60 },
+      { title: 'VR Headset Kids', price: 39, image: ICON.vr, colors: ['blue', 'pink'], bluetooth: false, added: 3, popularity: 55 },
+      { title: 'VR Headset Pro', price: 79, image: ICON.vr, colors: ['black', 'white'], bluetooth: true, added: 6, popularity: 92 },
+      { title: 'VR Headset Elite', price: 95, image: ICON.vr, colors: ['black', 'blue'], bluetooth: true, added: 4, popularity: 80 },
+      { title: 'VR Headset Max', price: 99, image: ICON.vr, colors: ['black'], bluetooth: true, added: 5, popularity: 88 },
+      { title: 'VR Controller Pair', price: 49, image: ICON.vr, colors: ['black', 'white'], bluetooth: true, added: 7, popularity: 72 },
+      { title: 'VR Lens Kit', price: 19, image: ICON.vr, colors: ['black'], bluetooth: false, added: 8, popularity: 50 }
+    ]
+  },
+  cameras: {
+    name: 'Action cameras',
+    products: [
+      { title: 'Action Cam Mini', price: 39, image: ICON.cameras, colors: ['black', 'white'], bluetooth: true, added: 2, popularity: 62 },
+      { title: 'Action Cam Go', price: 49, image: ICON.cameras, colors: ['black'], bluetooth: true, added: 3, popularity: 70 },
+      { title: 'Action Cam 4K', price: 89, image: ICON.cameras, colors: ['black', 'blue'], bluetooth: true, added: 6, popularity: 94 },
+      { title: 'Action Cam Waterproof', price: 69, image: ICON.cameras, colors: ['black', 'red'], bluetooth: true, added: 5, popularity: 83 },
+      { title: 'Action Cam 360', price: 99, image: ICON.cameras, colors: ['black'], bluetooth: true, added: 4, popularity: 88 },
+      { title: 'Action Cam Lite', price: 25, image: ICON.cameras, colors: ['white', 'pink'], bluetooth: false, added: 1, popularity: 48 },
+      { title: 'Action Cam Pro', price: 95, image: ICON.cameras, colors: ['black', 'blue'], bluetooth: true, added: 7, popularity: 90 }
+    ]
+  },
+  trackers: {
+    name: 'Fitness trackers',
+    products: [
+      { title: 'Fitness Band Lite', price: 19, image: ICON.trackers, colors: ['black', 'pink'], bluetooth: true, added: 1, popularity: 58 },
+      { title: 'Fitness Band Plus', price: 29, image: ICON.trackers, colors: ['black', 'blue'], bluetooth: true, added: 3, popularity: 74 },
+      { title: 'Fitness Band HR', price: 39, image: ICON.trackers, colors: ['black', 'red'], bluetooth: true, added: 5, popularity: 86 },
+      { title: 'Fitness Band Kids', price: 15, image: ICON.trackers, colors: ['blue', 'pink'], bluetooth: false, added: 2, popularity: 52 },
+      { title: 'Fitness Band Pro', price: 59, image: ICON.trackers, colors: ['black', 'white'], bluetooth: true, added: 6, popularity: 90 },
+      { title: 'Fitness Band Elite', price: 79, image: ICON.trackers, colors: ['black'], bluetooth: true, added: 4, popularity: 82 }
+    ]
+  },
+  watches: {
+    name: 'Smart watches',
+    products: [
+      { title: 'Smart Watch Lite', price: 39, image: ICON.watches, colors: ['black', 'pink'], bluetooth: true, added: 1, popularity: 60 },
+      { title: 'Smart Watch Sport', price: 59, image: ICON.watches, colors: ['black', 'red'], bluetooth: true, added: 4, popularity: 84 },
+      { title: 'Smart Watch Classic', price: 79, image: ICON.watches, colors: ['black', 'white'], bluetooth: true, added: 5, popularity: 88 },
+      { title: 'Smart Watch One', price: 49, image: ICON.watches, colors: ['black', 'blue'], bluetooth: true, added: 3, popularity: 76 },
+      { title: 'Smart Watch Kids', price: 29, image: ICON.watches, colors: ['blue', 'pink'], bluetooth: false, added: 2, popularity: 54 },
+      { title: 'Smart Watch Pro', price: 99, image: ICON.watches, colors: ['black'], bluetooth: true, added: 6, popularity: 95 }
+    ]
+  },
+  drones: {
+    name: 'Quadcopters',
+    products: [
+      { title: 'Drone Mini', price: 29, image: ICON.drones, colors: ['white', 'black'], bluetooth: true, added: 1, popularity: 64 },
+      { title: 'Drone Foldable', price: 69, image: ICON.drones, colors: ['black', 'blue'], bluetooth: true, added: 4, popularity: 82 },
+      { title: 'Drone 4K', price: 99, image: ICON.drones, colors: ['black'], bluetooth: true, added: 6, popularity: 96 },
+      { title: 'Drone Racing', price: 79, image: ICON.drones, colors: ['black', 'red'], bluetooth: true, added: 5, popularity: 88 },
+      { title: 'Drone Pro', price: 95, image: ICON.drones, colors: ['black', 'white'], bluetooth: true, added: 3, popularity: 90 },
+      { title: 'Drone Kids', price: 25, image: ICON.drones, colors: ['blue', 'pink'], bluetooth: false, added: 2, popularity: 50 }
+    ]
+  }
+};
+
+let activeProducts = [];
 
 const PAGE_SIZE = 6;
 
@@ -829,9 +903,26 @@ function initCatalog() {
   const minInput = document.querySelector('[data-range-input-min]');
   const maxInput = document.querySelector('[data-range-input-max]');
 
+  const params = new URLSearchParams(window.location.search);
+
+  // Category from the URL (?category=...) selects which product set to show
+  // and updates the page title and breadcrumb.
+  const category = CATALOG[params.get('category')] || CATALOG.selfie;
+  activeProducts = category.products;
+
+  const titleEl = document.querySelector('[data-category-title]');
+  const crumbEl = document.querySelector('[data-category-current]');
+  if (titleEl) {
+    titleEl.textContent = category.name;
+  }
+  if (crumbEl) {
+    crumbEl.textContent = category.name;
+  }
+  document.title = `${category.name} — Device`;
+
   // Search query from the URL (?q=...) drives a name filter and relaxes the
   // pre-set filters so the results reflect the search, not the panel defaults.
-  const searchQuery = (new URLSearchParams(window.location.search).get('q') || '').trim();
+  const searchQuery = (params.get('q') || '').trim();
   if (searchQuery) {
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
@@ -895,7 +986,7 @@ function initCatalog() {
   }
 
   function cardMarkup(product) {
-    const image = `./img/product-img/product-${product.image}.jpg`;
+    const image = product.image;
     return `
       <li class="product-card" data-product>
         <a class="product-card-link link" href="#" data-quickview data-title="${product.title}">
@@ -940,7 +1031,7 @@ function initCatalog() {
   }
 
   function render() {
-    const filtered = applySorting(applyFilters(PRODUCTS));
+    const filtered = applySorting(applyFilters(activeProducts));
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     endPage = Math.min(endPage, totalPages);
     startPage = Math.min(startPage, endPage);
@@ -955,7 +1046,7 @@ function initCatalog() {
   }
 
   function totalPagesNow() {
-    return Math.max(1, Math.ceil(applyFilters(PRODUCTS).length / PAGE_SIZE));
+    return Math.max(1, Math.ceil(applyFilters(activeProducts).length / PAGE_SIZE));
   }
 
   function resetAndRender() {
@@ -1153,12 +1244,36 @@ function initRange(onChange) {
 }
 
 /* ========================================================================== */
+/* Category links (index): point each card at its catalog category            */
+/* ========================================================================== */
+
+function initCategoryLinks() {
+  const slugs = {
+    'Virtual reality': 'vr',
+    'Selfie monopods': 'selfie',
+    'Action cameras': 'cameras',
+    'Fitness trackers': 'trackers',
+    'Smart watches': 'watches',
+    'Quadcopters': 'drones'
+  };
+
+  document.querySelectorAll('.categories-link').forEach((link) => {
+    const name = link.querySelector('.categories-name')?.textContent.trim();
+    const slug = slugs[name];
+    if (slug) {
+      link.href = `catalog.html?category=${slug}`;
+    }
+  });
+}
+
+/* ========================================================================== */
 /* Bootstrap                                                                  */
 /* ========================================================================== */
 
 initNav();
 initTabs();
 initSlider();
+initCategoryLinks();
 
 buildModals();
 renderCartCount();

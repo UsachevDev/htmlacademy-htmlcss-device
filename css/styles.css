@@ -1553,6 +1553,7 @@ a {
 .product-card-image-wrapper {
   position: relative;
   overflow: hidden;
+  background-color: var(--color-muted);
 }
 
 .product-card-image {
