@@ -106,22 +106,22 @@
     </header>
     <main class="main-container main-inner">
       <header class="inner-header">
-        <h1 class="inner-header-title title" data-category-title>Selfie monopods</h1>
+        <h1 class="inner-header-title title" data-category-title>Catalog</h1>
         <ul class="breadcrumbs reset-list">
           <li class="breadcrumbs-item">
             <a class="breadcrumbs-link" href="index.html">Home</a>
           </li>
-          <li class="breadcrumbs-item">
-            <a class="breadcrumbs-link" href="catalog.html">Catalog</a>
+          <li class="breadcrumbs-item" data-crumb-catalog>
+            <span class="breadcrumbs-current" aria-current="page">Catalog</span>
           </li>
-          <li class="breadcrumbs-item">
-            <span class="breadcrumbs-current" aria-current="page" data-category-current>Selfie monopods</span>
+          <li class="breadcrumbs-item" data-crumb-extra hidden>
+            <span class="breadcrumbs-current" aria-current="page" data-category-current></span>
           </li>
         </ul>
       </header>
-      <div class="catalog">
+      <div class="catalog" data-catalog-main>
         <h2 class="visually-hidden">Product list with filters</h2>
-        <form class="filter" action="https://echo.htmlacademy.ru/" method="get" data-filter>
+        <form class="filter" action="catalog.html" method="get" data-filter>
           <h2 class="filter-title">Filter</h2>
           <fieldset class="filter-group">
             <legend class="filter-group-title">Price</legend>
@@ -231,6 +231,7 @@
           </div>
         </div>
       </div>
+      <div class="catalog-overview" data-catalog-overview hidden></div>
     </main>
     <footer class="page-footer">
       <div class="footer-container">

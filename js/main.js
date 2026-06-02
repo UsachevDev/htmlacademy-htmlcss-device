@@ -883,6 +883,34 @@ const CATALOG = {
 
 let activeProducts = [];
 
+const ALL_PRODUCTS = Object.values(CATALOG).flatMap((entry) => entry.products);
+
+const CATEGORY_TILES = [
+  { slug: 'vr', name: 'Virtual reality', image: ICON.vr },
+  { slug: 'selfie', name: 'Selfie monopods', image: './img/categories/selfie.svg' },
+  { slug: 'cameras', name: 'Action cameras', image: ICON.cameras },
+  { slug: 'trackers', name: 'Fitness trackers', image: ICON.trackers },
+  { slug: 'watches', name: 'Smart watches', image: ICON.watches },
+  { slug: 'drones', name: 'Quadcopters', image: ICON.drones }
+];
+
+function renderOverview(container) {
+  container.innerHTML = `
+    <ul class="overview-list reset-list">
+      ${CATEGORY_TILES.map(
+        (tile) => `
+        <li class="overview-item">
+          <a class="overview-card" href="catalog.html?category=${tile.slug}">
+            <span class="overview-media">
+              <img class="overview-image" src="${tile.image}" width="160" height="160" alt="" loading="lazy">
+            </span>
+            <span class="overview-name">${tile.name}</span>
+          </a>
+        </li>`
+      ).join('')}
+    </ul>`;
+}
+
 const PAGE_SIZE = 6;
 
 function initCatalog() {
@@ -904,25 +932,61 @@ function initCatalog() {
   const maxInput = document.querySelector('[data-range-input-max]');
 
   const params = new URLSearchParams(window.location.search);
-
-  // Category from the URL (?category=...) selects which product set to show
-  // and updates the page title and breadcrumb.
-  const category = CATALOG[params.get('category')] || CATALOG.selfie;
-  activeProducts = category.products;
+  const categoryKey = params.get('category');
+  const searchQuery = (params.get('q') || '').trim();
 
   const titleEl = document.querySelector('[data-category-title]');
-  const crumbEl = document.querySelector('[data-category-current]');
-  if (titleEl) {
-    titleEl.textContent = category.name;
+  const catalogCrumb = document.querySelector('[data-crumb-catalog]');
+  const extraCrumb = document.querySelector('[data-crumb-extra]');
+  const extraCrumbText = document.querySelector('[data-category-current]');
+  const mainView = document.querySelector('[data-catalog-main]');
+  const overview = document.querySelector('[data-catalog-overview]');
+
+  function showExtraCrumb(text) {
+    if (catalogCrumb) {
+      catalogCrumb.innerHTML = '<a class="breadcrumbs-link" href="catalog.html">Catalog</a>';
+    }
+    if (extraCrumb && extraCrumbText) {
+      extraCrumb.hidden = false;
+      extraCrumbText.textContent = text;
+    }
   }
-  if (crumbEl) {
-    crumbEl.textContent = category.name;
+
+  // No category and no search -> show the catalog overview (a grid of categories).
+  if (!CATALOG[categoryKey] && !searchQuery) {
+    if (titleEl) {
+      titleEl.textContent = 'Catalog';
+    }
+    document.title = 'Catalog — Device';
+    if (mainView) {
+      mainView.hidden = true;
+    }
+    if (overview) {
+      overview.hidden = false;
+      renderOverview(overview);
+    }
+    return undefined;
   }
-  document.title = `${category.name} — Device`;
+
+  if (CATALOG[categoryKey]) {
+    const category = CATALOG[categoryKey];
+    activeProducts = category.products;
+    if (titleEl) {
+      titleEl.textContent = category.name;
+    }
+    document.title = `${category.name} — Device`;
+    showExtraCrumb(category.name);
+  } else {
+    activeProducts = ALL_PRODUCTS;
+    if (titleEl) {
+      titleEl.textContent = 'Search results';
+    }
+    document.title = 'Search — Device';
+    showExtraCrumb(`“${searchQuery}”`);
+  }
 
   // Search query from the URL (?q=...) drives a name filter and relaxes the
   // pre-set filters so the results reflect the search, not the panel defaults.
-  const searchQuery = (params.get('q') || '').trim();
   if (searchQuery) {
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {

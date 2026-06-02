@@ -55,7 +55,7 @@ with semantic HTML, modern CSS and vanilla JavaScript — no frameworks, no buil
 | Page | Description |
 | --- | --- |
 | `index.html` | Landing page: hero slider, category grid, advantages tabs, info & newsletter blocks. |
-| `catalog.html` | Catalog page: sidebar filters (price range, color, Bluetooth), sorting and a product grid. |
+| `catalog.html` | Catalog: a category overview by default, a per-category product view (`?category=`) with sidebar filters / sorting, or a cross-category search view (`?q=`) — with breadcrumbs that reflect the current view. |
 
 ## Project structure
 

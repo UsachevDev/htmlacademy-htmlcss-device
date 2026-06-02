@@ -170,6 +170,7 @@ a {
 .newsletter,
 .inner-header,
 .catalog,
+.catalog-overview,
 .footer-container {
   width: min(100% - (var(--gutter) * 2), var(--container-width));
   margin-inline: auto;
@@ -1581,6 +1582,53 @@ a {
 .product-card:hover .product-card-quickview,
 .product-card-link:focus-visible .product-card-quickview {
   transform: translateY(0);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Catalog overview (category grid)                                           */
+/* -------------------------------------------------------------------------- */
+
+.catalog-overview {
+  margin-bottom: 60px;
+}
+
+.overview-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 30px;
+}
+
+.overview-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--color-dark);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.overview-card:hover,
+.overview-card:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.12);
+}
+
+.overview-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.overview-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 /* -------------------------------------------------------------------------- */
