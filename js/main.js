@@ -75,7 +75,8 @@ function initSlider() {
     slides.forEach((slide, index) => {
       const isActive = index === current;
       slide.classList.toggle('slider-slide-current', isActive);
-      slide.hidden = !isActive;
+      slide.inert = !isActive;
+      slide.setAttribute('aria-hidden', String(!isActive));
     });
 
     dots.forEach((dot, index) => {
