@@ -5,8 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light">
     <meta name="description" content="Device — an online store for gadgets: drones, VR headsets, action cameras, fitness trackers, smart watches and more.">
+    <meta name="theme-color" content="#ffe17f">
     <title>Device — Gadget Store</title>
     <link rel="icon" href="./img/favicon.svg" type="image/svg+xml">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Device">
+    <meta property="og:title" content="Device — Online Gadget Store">
+    <meta property="og:description" content="Drones, VR headsets, action cameras, fitness trackers and smart watches — with free delivery, official warranty and instalments.">
+    <meta property="og:url" content="https://usachevdev.github.io/htmlacademy-htmlcss-device/">
+    <meta property="og:image" content="https://usachevdev.github.io/htmlacademy-htmlcss-device/img/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Device — online gadget store">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Device — Online Gadget Store">
+    <meta name="twitter:description" content="Drones, VR headsets, action cameras and wearables — free delivery, official warranty, instalments.">
+    <meta name="twitter:image" content="https://usachevdev.github.io/htmlacademy-htmlcss-device/img/og-image.png">
     <link rel="preload" href="./fonts/Rubik/Rubik-Regular.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="./fonts/Raleway/Raleway-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="./css/styles.css">
@@ -22,10 +37,10 @@
           <span class="main-nav-toggle-line"></span>
         </button>
         <div class="user-menu">
-          <form class="search" action="https://echo.htmlacademy.ru/" method="post">
+          <form class="search" action="catalog.html" method="get" role="search">
             <label class="search-label">
               <span class="visually-hidden">Search the site</span>
-              <input class="search-input" type="search" name="search" placeholder="Search">
+              <input class="search-input" type="search" name="q" placeholder="Search">
             </label>
             <button class="search-button" type="submit">
               <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -346,7 +361,7 @@
             and unboxings, plus exclusive deals and special offers.
           </p>
         </div>
-        <form class="newsletter-form" action="https://echo.htmlacademy.ru/" method="post">
+        <form class="newsletter-form">
           <label class="newsletter-field-label">
             <span class="visually-hidden">Your e-mail</span>
             <input class="newsletter-field" placeholder="Your e-mail" type="email" name="newsletter-email" required>

@@ -73,6 +73,21 @@ html {
   scroll-margin-top: 24px;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-dark);
+  outline-offset: 2px;
+}
+
+.page-footer a:focus-visible,
+.scroll-top:focus-visible {
+  outline-color: var(--color-accent);
+}
+
+.range-toggle:focus-visible {
+  outline: 2px solid var(--color-dark);
+  outline-offset: 3px;
+}
+
 html {
   height: 100%;
   color-scheme: light;

@@ -88,11 +88,81 @@ function initSlider() {
     render();
   };
 
-  prev?.addEventListener('click', () => goTo(current - 1));
-  next?.addEventListener('click', () => goTo(current + 1));
-  dots.forEach((dot, index) => dot.addEventListener('click', () => goTo(index)));
+  // Autoplay with pause on hover/focus, respecting reduced motion.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const AUTOPLAY_MS = 6000;
+  let timer = null;
+  let paused = false;
+
+  function stop() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }
+
+  function start() {
+    if (reduceMotion || paused) {
+      return;
+    }
+    stop();
+    timer = setInterval(() => goTo(current + 1), AUTOPLAY_MS);
+  }
+
+  function userGoTo(index) {
+    goTo(index);
+    start();
+  }
+
+  slider.addEventListener('mouseenter', () => {
+    paused = true;
+    stop();
+  });
+  slider.addEventListener('mouseleave', () => {
+    paused = false;
+    start();
+  });
+  slider.addEventListener('focusin', () => {
+    paused = true;
+    stop();
+  });
+  slider.addEventListener('focusout', () => {
+    paused = false;
+    start();
+  });
+  document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+  // Touch swipe.
+  let touchX = null;
+  slider.addEventListener('touchstart', (event) => {
+    touchX = event.changedTouches[0].clientX;
+  }, { passive: true });
+  slider.addEventListener('touchend', (event) => {
+    if (touchX === null) {
+      return;
+    }
+    const dx = event.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 40) {
+      userGoTo(current + (dx < 0 ? 1 : -1));
+    }
+    touchX = null;
+  }, { passive: true });
+
+  // Keyboard arrows.
+  slider.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') {
+      userGoTo(current - 1);
+    } else if (event.key === 'ArrowRight') {
+      userGoTo(current + 1);
+    }
+  });
+
+  prev?.addEventListener('click', () => userGoTo(current - 1));
+  next?.addEventListener('click', () => userGoTo(current + 1));
+  dots.forEach((dot, index) => dot.addEventListener('click', () => userGoTo(index)));
 
   render();
+  start();
 }
 
 /* ========================================================================== */
@@ -661,9 +731,7 @@ function initInteractions() {
     if (form.classList.contains('search')) {
       event.preventDefault();
       const query = form.querySelector('input')?.value.trim();
-      if (query) {
-        window.location.href = 'catalog.html';
-      }
+      window.location.href = query ? `catalog.html?q=${encodeURIComponent(query)}` : 'catalog.html';
     }
   });
 }
@@ -727,6 +795,27 @@ function initCatalog() {
   const minInput = document.querySelector('[data-range-input-min]');
   const maxInput = document.querySelector('[data-range-input-max]');
 
+  // Search query from the URL (?q=...) drives a name filter and relaxes the
+  // pre-set filters so the results reflect the search, not the panel defaults.
+  const searchQuery = (new URLSearchParams(window.location.search).get('q') || '').trim();
+  if (searchQuery) {
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+      searchInput.value = searchQuery;
+    }
+    if (filterForm) {
+      filterForm.querySelectorAll('input[name="color"]').forEach((input) => {
+        input.checked = true;
+      });
+      filterForm.querySelectorAll('input[name="bluetooth"]').forEach((input) => {
+        input.checked = false;
+      });
+    }
+    if (empty) {
+      empty.textContent = `No products found for “${searchQuery}”. Try another search.`;
+    }
+  }
+
   let startPage = 1;
   let endPage = 1;
   let sortOrder = 'asc';
@@ -744,13 +833,15 @@ function initCatalog() {
 
   function applyFilters(products) {
     const { colors, bluetooth, min, max } = readFilters();
+    const query = searchQuery.toLowerCase();
 
     return products.filter((product) => {
       const colorMatch = colors.length === 0 || product.colors.some((color) => colors.includes(color));
       const bluetoothMatch = !bluetooth || product.bluetooth === (bluetooth === 'yes');
       const priceMatch = product.price >= min && product.price <= max;
+      const nameMatch = !query || product.title.toLowerCase().includes(query);
 
-      return colorMatch && bluetoothMatch && priceMatch;
+      return colorMatch && bluetoothMatch && priceMatch && nameMatch;
     });
   }
 
@@ -927,9 +1018,54 @@ function initRange(onChange) {
     minInput.value = String(minValue);
     maxInput.value = String(maxValue);
 
+    minToggle.setAttribute('aria-valuenow', String(minValue));
+    minToggle.setAttribute('aria-valuetext', `$${minValue}`);
+    maxToggle.setAttribute('aria-valuenow', String(maxValue));
+    maxToggle.setAttribute('aria-valuetext', `$${maxValue}`);
+
     if (notify && typeof onChange === 'function') {
       onChange();
     }
+  }
+
+  function onKey(isMin, event) {
+    const step = event.shiftKey ? 10 : 1;
+    let value = isMin ? minValue : maxValue;
+
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        value -= step;
+        break;
+      case 'ArrowRight':
+      case 'ArrowUp':
+        value += step;
+        break;
+      case 'PageDown':
+        value -= 10;
+        break;
+      case 'PageUp':
+        value += 10;
+        break;
+      case 'Home':
+        value = MIN;
+        break;
+      case 'End':
+        value = MAX;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+
+    if (isMin) {
+      minValue = Math.min(clamp(value), maxValue - GAP);
+    } else {
+      maxValue = Math.max(clamp(value), minValue + GAP);
+    }
+
+    render(true);
   }
 
   function startDrag(isMin) {
@@ -965,6 +1101,9 @@ function initRange(onChange) {
   minToggle.addEventListener('touchstart', () => startDrag(true), { passive: true });
   maxToggle.addEventListener('mousedown', () => startDrag(false));
   maxToggle.addEventListener('touchstart', () => startDrag(false), { passive: true });
+
+  minToggle.addEventListener('keydown', (event) => onKey(true, event));
+  maxToggle.addEventListener('keydown', (event) => onKey(false, event));
 
   minInput.addEventListener('change', () => {
     minValue = clamp(Math.min(Number(minInput.value) || MIN, maxValue - GAP));

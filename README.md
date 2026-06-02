@@ -26,10 +26,18 @@ with semantic HTML, modern CSS and vanilla JavaScript — no frameworks, no buil
   - **quick view** of any product from the catalog cards or the hero slider;
   - **toast notifications** and tasteful micro-interactions (card hover, a
     back-to-top button), all respecting `prefers-reduced-motion`;
-  - dual-handle price range slider synced with the number inputs;
+  - hero slider with **autoplay** (pauses on hover/focus), **touch swipe** and
+    arrow-key control;
+  - **URL-driven search** — the header search sends `?q=` to the catalog, which
+    pre-fills the field and filters products (with a friendly empty state);
+  - dual-handle price range slider — fully **keyboard-operable** (`role="slider"`,
+    arrows / Home / End, live `aria-valuenow`) and synced with the number inputs;
   - accessible mobile burger menu.
 - **Accessible & semantic** — landmark elements, `aria` attributes, visually-hidden labels,
-  keyboard-focus styles, focus-trapped dialogs and correct heading order.
+  visible `:focus-visible` rings, focus-trapped dialogs, a keyboard-operable custom
+  slider, correct heading order and `prefers-reduced-motion` support.
+- **Share-ready SEO** — per-page `<title>`/`description`, Open Graph & Twitter Card
+  tags with a generated 1200×630 preview image, `theme-color`, and a custom 404 page.
 - **Maintainable CSS** — CSS custom properties for the design tokens, a single fluid
   container helper, and clearly sectioned, lint-friendly styles.
 - **Performance-minded** — `woff2` fonts with `font-display: swap` and `<link rel="preload">`,
