@@ -16,10 +16,13 @@ with semantic HTML, modern CSS and vanilla JavaScript — no frameworks, no buil
     "show more" + pagination;
   - **shopping cart** built as a real store in `localStorage`: add to cart, a
     mini-cart modal with quantity steppers, remove, live total and checkout;
-  - **accessible modals** (cart, login, product quick view) with focus trapping,
-    `Esc`-to-close, scroll lock and `aria` dialog roles — injected once and shared
-    across pages;
-  - **login form** with native constraint validation and inline error messages;
+  - **accessible modals** (cart, login, contact, product quick view) with focus
+    trapping, `Esc`-to-close, scroll lock and `aria` dialog roles — injected once
+    and shared across pages;
+  - **every control is wired up** — smooth-scroll in-page navigation, working
+    search, newsletter and contact forms with validation, and friendly toast
+    feedback for demo-only actions (no dead `#` links);
+  - **login & contact forms** with native constraint validation and inline errors;
   - **quick view** of any product from the catalog cards or the hero slider;
   - **toast notifications** and tasteful micro-interactions (card hover, a
     back-to-top button), all respecting `prefers-reduced-motion`;

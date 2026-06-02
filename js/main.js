@@ -219,7 +219,7 @@ function buildModals() {
   }
 
   const loginBody = `
-    <form class="modal-form auth-form" novalidate>
+    <form class="modal-form auth-form" data-validate data-success="Welcome back! 👋" novalidate>
       <h2 class="modal-title" id="login-title">Log in</h2>
       <p class="modal-subtitle">Welcome back to Device.</p>
       <label class="field">
@@ -233,7 +233,7 @@ function buildModals() {
         <span class="field-error" data-error></span>
       </label>
       <button class="button modal-submit" type="submit">Log in</button>
-      <p class="modal-alt">No account yet? <a href="#">Create one</a></p>
+      <p class="modal-alt">No account yet? <a href="#" data-toast="Sign-up isn't available in this demo yet.">Create one</a></p>
     </form>`;
 
   const cartBody = `
@@ -246,6 +246,28 @@ function buildModals() {
         <button class="button cart-checkout" type="button" data-cart-checkout>Checkout</button>
       </div>
     </div>`;
+
+  const contactBody = `
+    <form class="modal-form auth-form" data-validate data-success="Message sent! We'll get back to you soon." novalidate>
+      <h2 class="modal-title" id="contact-title">Write to us</h2>
+      <p class="modal-subtitle">Questions, special orders or feedback — we read everything.</p>
+      <label class="field">
+        <span class="field-label">Name</span>
+        <input class="field-input" type="text" name="name" required placeholder="Your name">
+        <span class="field-error" data-error></span>
+      </label>
+      <label class="field">
+        <span class="field-label">Email</span>
+        <input class="field-input" type="email" name="email" required placeholder="you@example.com" autocomplete="email">
+        <span class="field-error" data-error></span>
+      </label>
+      <label class="field">
+        <span class="field-label">Message</span>
+        <textarea class="field-input field-textarea" name="message" required rows="4" placeholder="How can we help?"></textarea>
+        <span class="field-error" data-error></span>
+      </label>
+      <button class="button modal-submit" type="submit">Send message</button>
+    </form>`;
 
   const quickviewBody = `
     <div class="quickview">
@@ -265,6 +287,7 @@ function buildModals() {
   root.setAttribute('data-modals', '');
   root.innerHTML =
     modalShell('login', 'login-title', loginBody, 'modal-login') +
+    modalShell('contact', 'contact-title', contactBody, 'modal-contact') +
     modalShell('cart', 'cart-title', cartBody, 'modal-cart') +
     modalShell('quickview', 'quickview-title', quickviewBody, 'modal-quickview');
   document.body.appendChild(root);
@@ -509,6 +532,21 @@ function initInteractions() {
       return;
     }
 
+    const toaster = event.target.closest('[data-toast]');
+    if (toaster) {
+      event.preventDefault();
+      showToast(toaster.dataset.toast);
+      return;
+    }
+
+    const tabLink = event.target.closest('[data-tab-target]');
+    if (tabLink) {
+      event.preventDefault();
+      document.querySelector(`[data-tab="${tabLink.dataset.tabTarget}"]`)?.click();
+      document.querySelector('#services')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
     const quickview = event.target.closest('[data-quickview]');
     if (quickview) {
       event.preventDefault();
@@ -577,30 +615,55 @@ function initInteractions() {
   });
 
   document.addEventListener('submit', (event) => {
-    if (!event.target.classList.contains('auth-form')) {
+    const form = event.target;
+
+    if (form.matches('[data-validate]')) {
+      event.preventDefault();
+      let valid = true;
+
+      form.querySelectorAll('input, textarea').forEach((field) => {
+        const error = field.closest('.field')?.querySelector('[data-error]');
+        if (!field.checkValidity()) {
+          valid = false;
+          if (error) {
+            error.textContent = field.validationMessage;
+          }
+          field.classList.add('field-invalid');
+        } else {
+          if (error) {
+            error.textContent = '';
+          }
+          field.classList.remove('field-invalid');
+        }
+      });
+
+      if (valid) {
+        if (form.closest('.modal')) {
+          closeModal();
+        }
+        showToast(form.dataset.success || 'Done!');
+        form.reset();
+      }
       return;
     }
 
-    event.preventDefault();
-    const form = event.target;
-    let valid = true;
-
-    form.querySelectorAll('input').forEach((input) => {
-      const error = input.closest('.field').querySelector('[data-error]');
-      if (!input.checkValidity()) {
-        valid = false;
-        error.textContent = input.validationMessage;
-        input.classList.add('field-invalid');
+    if (form.classList.contains('newsletter-form')) {
+      event.preventDefault();
+      if (form.checkValidity()) {
+        showToast("You're subscribed! 🎉");
+        form.reset();
       } else {
-        error.textContent = '';
-        input.classList.remove('field-invalid');
+        form.reportValidity();
       }
-    });
+      return;
+    }
 
-    if (valid) {
-      closeModal();
-      showToast('Welcome back! 👋');
-      form.reset();
+    if (form.classList.contains('search')) {
+      event.preventDefault();
+      const query = form.querySelector('input')?.value.trim();
+      if (query) {
+        window.location.href = 'catalog.html';
+      }
     }
   });
 }
